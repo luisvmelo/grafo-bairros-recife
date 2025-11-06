@@ -238,18 +238,29 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
     <div id="mynetwork"></div>
 
     <script type="text/javascript">
+        console.log('Iniciando carregamento do grafo...');
+
         // Dados
         var nodes = new vis.DataSet({json.dumps(nos, ensure_ascii=False)});
         var edges = new vis.DataSet({json.dumps(arestas, ensure_ascii=False)});
 
+        console.log('Nós carregados:', nodes.length);
+        console.log('Arestas carregadas:', edges.length);
+
         // Container
         var container = document.getElementById('mynetwork');
+
+        if (!container) {{
+            console.error('Container mynetwork não encontrado!');
+        }}
 
         // Data
         var data = {{
             nodes: nodes,
             edges: edges
         }};
+
+        console.log('Data preparada');
 
         // Options
         var options = {{
@@ -283,15 +294,24 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
             physics: {{
                 enabled: true,
                 barnesHut: {{
-                    gravitationalConstant: -8000,
+                    gravitationalConstant: -2000,
                     centralGravity: 0.3,
-                    springLength: 150,
-                    springConstant: 0.04,
-                    damping: 0.09
+                    springLength: 200,
+                    springConstant: 0.001,
+                    damping: 0.09,
+                    avoidOverlap: 0.1
                 }},
                 stabilization: {{
-                    iterations: 150
-                }}
+                    enabled: true,
+                    iterations: 1000,
+                    updateInterval: 25,
+                    onlyDynamicEdges: false,
+                    fit: true
+                }},
+                maxVelocity: 50,
+                minVelocity: 0.75,
+                solver: 'barnesHut',
+                timestep: 0.5
             }},
             interaction: {{
                 hover: true,
@@ -302,13 +322,31 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
         }};
 
         // Initialize network
+        console.log('Criando rede vis.js...');
         var network = new vis.Network(container, data, options);
+        console.log('Rede criada com sucesso!');
+
+        // Event de estabilização
+        network.on("stabilizationProgress", function(params) {{
+            var progress = Math.round((params.iterations / params.total) * 100);
+            console.log('Estabilizando grafo:', progress + '%');
+        }});
+
+        network.on("stabilizationIterationsDone", function() {{
+            console.log('Estabilização completa!');
+            network.setOptions({{ physics: false }});
+        }});
+
+        network.on("startStabilizing", function() {{
+            console.log('Iniciando estabilização...');
+        }});
 
         // Toggle physics
-        var physicsEnabled = true;
+        var physicsEnabled = false;
         function togglePhysics() {{
             physicsEnabled = !physicsEnabled;
             network.setOptions({{ physics: {{ enabled: physicsEnabled }} }});
+            console.log('Física:', physicsEnabled ? 'LIGADA' : 'DESLIGADA');
         }}
 
         // Network events
