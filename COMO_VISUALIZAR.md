@@ -1,8 +1,8 @@
 # Como Visualizar o Grafo
 
-## Visualização Atual
+## Visualização Atual - ATUALIZADA! 🔍
 
-Agora **TODAS as 904 arestas são desenhadas individualmente**!
+Agora **TODAS as 904 arestas são desenhadas individualmente** + **Busca Visual de Bairros**!
 
 ### O que mudou:
 
@@ -75,7 +75,43 @@ Você verá 13 linhas separadas conectando esses bairros:
 - Rua Conselheiro Barros Barreto (296.26m)
 - ... e mais 9 vias
 
+## 🔍 NOVO: Busca Visual de Bairros
+
+### Como Usar:
+
+1. **Localize a caixa de busca** no canto superior esquerdo
+2. **Digite o nome** (ou parte dele) do bairro que procura
+3. **Veja os resultados** aparecerem em tempo real
+4. **Clique em um resultado** ou **pressione Enter**
+
+### Funcionalidades da Busca:
+
+- ✅ Busca em tempo real (mostra resultados enquanto digita)
+- ✅ Ignora acentos (digite "agua" para encontrar "Água Fria")
+- ✅ Ignora maiúsculas/minúsculas
+- ✅ Mostra até 10 resultados
+- ✅ Exibe subregião de cada bairro
+- ✅ Animação suave de zoom (2x)
+- ✅ Destaque dourado por 3 segundos
+- ✅ Auto-limpa após seleção
+
+### Exemplos de Busca:
+
+| Digite | Encontra |
+|--------|----------|
+| `agua` | Água Fria |
+| `boa` | Boa Vista, Boa Viagem |
+| `casa` | Casa Amarela, Casa Forte |
+| `recife` | Recife |
+| `linha` | Linha do Tiro |
+| `prado` | Prado |
+
 ## Controles Úteis
+
+### Busca (Canto Superior Esquerdo):
+- 🔍 **Campo de texto**: Digite para buscar bairros
+- **Enter**: Seleciona primeiro resultado
+- **Clique**: Seleciona resultado específico
 
 ### Botões no Canto Direito:
 - 🔍 **Ajustar Zoom**: Centraliza e ajusta o zoom automaticamente
