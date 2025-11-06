@@ -157,6 +157,46 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
             margin: 5px 0;
             font-size: 12px;
         }}
+        #search-box {{
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            width: 250px;
+        }}
+        #search-input {{
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }}
+        #search-results {{
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }}
+        .search-result-item {{
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }}
+        .search-result-item:hover {{
+            background: #f0f0f0;
+        }}
+        .search-result-item:last-child {{
+            border-bottom: none;
+        }}
+        .highlight-node {{
+            font-weight: bold;
+            color: #667eea;
+        }}
     </style>
 </head>
 <body>
@@ -176,6 +216,12 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
         <button onclick="network.fit()">🔍 Ajustar Zoom</button>
         <button onclick="togglePhysics()">⚡ Toggle Física</button>
         <button onclick="network.stabilize()">🎯 Estabilizar</button>
+    </div>
+
+    <div id="search-box">
+        <h3 style="margin-top: 0; margin-bottom: 10px;">🔍 Buscar Bairro</h3>
+        <input type="text" id="search-input" placeholder="Digite o nome do bairro..." />
+        <div id="search-results"></div>
     </div>
 
     <div id="legend">
@@ -281,8 +327,103 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
             container.style.cursor = 'default';
         }});
 
+        // Funcionalidade de busca
+        var searchInput = document.getElementById('search-input');
+        var searchResults = document.getElementById('search-results');
+        var allNodes = nodes.get();
+
+        // Função para normalizar texto (remover acentos e converter para minúsculas)
+        function normalizeText(text) {{
+            return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        }}
+
+        // Função para buscar bairros
+        function searchNodes(query) {{
+            if (!query || query.length < 2) {{
+                searchResults.innerHTML = '';
+                return;
+            }}
+
+            var normalizedQuery = normalizeText(query);
+            var results = allNodes.filter(function(node) {{
+                return normalizeText(node.label).includes(normalizedQuery);
+            }});
+
+            // Limitar a 10 resultados
+            results = results.slice(0, 10);
+
+            // Exibir resultados
+            if (results.length > 0) {{
+                searchResults.innerHTML = results.map(function(node) {{
+                    return '<div class="search-result-item" onclick="focusNode(\'' + node.id + '\')">' +
+                           '<span class="highlight-node">' + node.label + '</span><br>' +
+                           '<small>Subregião: ' + node.title.split('Subregião: ')[1].split('<br>')[0] + '</small>' +
+                           '</div>';
+                }}).join('');
+            }} else {{
+                searchResults.innerHTML = '<div style="padding: 8px; color: #999;">Nenhum bairro encontrado</div>';
+            }}
+        }}
+
+        // Função para focar em um nó específico
+        function focusNode(nodeId) {{
+            // Selecionar o nó
+            network.selectNodes([nodeId]);
+
+            // Focar no nó com animação
+            network.focus(nodeId, {{
+                scale: 2.0,
+                animation: {{
+                    duration: 1000,
+                    easingFunction: 'easeInOutQuad'
+                }}
+            }});
+
+            // Destacar temporariamente
+            var originalColor = nodes.get(nodeId).color;
+            nodes.update({{
+                id: nodeId,
+                color: {{
+                    background: '#FFD700',
+                    border: '#FF0000'
+                }},
+                borderWidth: 5
+            }});
+
+            // Restaurar cor original após 3 segundos
+            setTimeout(function() {{
+                nodes.update({{
+                    id: nodeId,
+                    color: originalColor,
+                    borderWidth: 2
+                }});
+            }}, 3000);
+
+            // Limpar campo de busca e resultados após seleção
+            setTimeout(function() {{
+                searchInput.value = '';
+                searchResults.innerHTML = '';
+            }}, 500);
+        }}
+
+        // Event listener para o input de busca
+        searchInput.addEventListener('input', function() {{
+            searchNodes(this.value);
+        }});
+
+        // Permitir Enter para selecionar primeiro resultado
+        searchInput.addEventListener('keypress', function(e) {{
+            if (e.key === 'Enter') {{
+                var firstResult = searchResults.querySelector('.search-result-item');
+                if (firstResult) {{
+                    firstResult.click();
+                }}
+            }}
+        }});
+
         console.log('Grafo carregado com sucesso!');
         console.log('Vértices:', nodes.length, 'Arestas:', edges.length);
+        console.log('Use a caixa de busca para encontrar bairros!');
     </script>
 </body>
 </html>
