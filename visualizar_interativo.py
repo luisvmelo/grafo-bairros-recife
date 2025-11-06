@@ -3,6 +3,7 @@ Visualização interativa do grafo usando HTML
 (Não requer bibliotecas externas além de pandas)
 """
 import json
+import html
 from carregar_dados import construir_grafo_completo
 
 
@@ -241,11 +242,20 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
         console.log('Iniciando carregamento do grafo...');
 
         // Dados
-        var nodes = new vis.DataSet({json.dumps(nos, ensure_ascii=False)});
-        var edges = new vis.DataSet({json.dumps(arestas, ensure_ascii=False)});
+        try {{
+            var nodesData = {json.dumps(nos)};
+            var edgesData = {json.dumps(arestas)};
 
-        console.log('Nós carregados:', nodes.length);
-        console.log('Arestas carregadas:', edges.length);
+            var nodes = new vis.DataSet(nodesData);
+            var edges = new vis.DataSet(edgesData);
+
+            console.log('Nós carregados:', nodes.length);
+            console.log('Arestas carregadas:', edges.length);
+        }} catch(e) {{
+            console.error('Erro ao carregar dados:', e);
+            alert('Erro ao carregar o grafo. Verifique o console para detalhes.');
+            throw e;
+        }}
 
         // Container
         var container = document.getElementById('mynetwork');
