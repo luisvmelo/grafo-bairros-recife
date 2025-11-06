@@ -46,55 +46,37 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
             'color': cor
         })
 
-    # Preparar dados das arestas
-    # Primeiro, contar quantas arestas paralelas existem entre cada par de bairros
-    arestas_por_par = {}
+    # Preparar dados das arestas - DESENHAR TODAS AS ARESTAS INDIVIDUALMENTE
+    arestas = []
+    arestas_adicionadas = set()
+    total_arestas_reais = 0
 
     for origem in grafo.adjacencias:
         for aresta in grafo.adjacencias[origem]:
-            par = tuple(sorted([origem, aresta.destino]))
+            # Criar um ID único para cada aresta (incluindo o nome da via)
+            # para permitir arestas paralelas
+            aresta_id = (origem, aresta.destino, aresta.nome_via, aresta.peso)
 
-            if par not in arestas_por_par:
-                arestas_por_par[par] = []
+            # Evitar duplicatas (grafo não direcionado - só desenhar uma vez)
+            aresta_reversa_id = (aresta.destino, origem, aresta.nome_via, aresta.peso)
 
-            arestas_por_par[par].append(aresta)
+            if aresta_id not in arestas_adicionadas and aresta_reversa_id not in arestas_adicionadas:
+                # Todas as arestas com a mesma largura fina
+                largura = 1
 
-    # Agora criar as arestas para visualização
-    arestas = []
-    total_arestas_reais = 0
+                # Título mostrando detalhes da via
+                titulo = f"<b>{aresta.nome_via}</b><br>Distância: {aresta.peso:.2f}m<br>{origem} ↔ {aresta.destino}"
 
-    for par, lista_arestas in arestas_por_par.items():
-        origem, destino = par
-        num_vias = len(lista_arestas)
-        total_arestas_reais += num_vias
+                arestas.append({
+                    'from': origem,
+                    'to': aresta.destino,
+                    'title': titulo,
+                    'width': largura,
+                    'length': min(300, aresta.peso / 5)
+                })
 
-        # Pegar a via mais curta como referência
-        via_mais_curta = min(lista_arestas, key=lambda a: a.peso)
-
-        # Largura proporcional ao número de vias paralelas
-        largura = min(15, 1 + num_vias * 0.5)
-
-        # Criar título com todas as vias
-        if num_vias == 1:
-            titulo = f"{via_mais_curta.nome_via}<br>{via_mais_curta.peso:.2f}m"
-        else:
-            titulo = f"<b>{num_vias} vias conectando esses bairros:</b><br>"
-            for a in lista_arestas[:5]:  # Mostrar até 5 vias
-                titulo += f"• {a.nome_via} ({a.peso:.2f}m)<br>"
-            if num_vias > 5:
-                titulo += f"... e mais {num_vias - 5} vias"
-
-        # Label para mostrar número de vias se houver múltiplas
-        label = str(num_vias) if num_vias > 1 else ''
-
-        arestas.append({
-            'from': origem,
-            'to': destino,
-            'title': titulo,
-            'width': largura,
-            'length': min(300, via_mais_curta.peso / 5),
-            'label': label
-        })
+                arestas_adicionadas.add(aresta_id)
+                total_arestas_reais += 1
 
     # Template HTML
     html_template = f"""
@@ -185,8 +167,7 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
 
     <div id="info">
         <span class="stats">📍 Vértices (Bairros): {grafo.num_vertices()}</span>
-        <span class="stats">🛣️ Vias Totais: {total_arestas_reais}</span>
-        <span class="stats">🔗 Conexões Únicas: {len(arestas)}</span>
+        <span class="stats">🛣️ Arestas (Vias): {total_arestas_reais}</span>
         <span class="stats">📊 Grau Médio: {sum(grafo.grau(v) for v in grafo.vertices) / len(grafo.vertices):.2f}</span>
     </div>
 
@@ -201,9 +182,9 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
         <div class="legend-title">📌 Legenda</div>
         <div class="legend-item">• <b>Tamanho do nó</b> = Número de vias do bairro</div>
         <div class="legend-item">• <b>Cor do nó</b> = Subregião do bairro</div>
-        <div class="legend-item">• <b>Espessura da linha</b> = Número de vias paralelas</div>
-        <div class="legend-item">• <b>Número na linha</b> = Quantidade de vias entre os bairros</div>
-        <div class="legend-item">• <b>Passe o mouse</b> para ver todas as vias</div>
+        <div class="legend-item">• <b>Cada linha</b> = Uma via individual</div>
+        <div class="legend-item">• <b>Múltiplas linhas</b> = Arestas paralelas (múltiplas vias)</div>
+        <div class="legend-item">• <b>Passe o mouse</b> para ver nome e distância da via</div>
         <div class="legend-item">• <b>Clique e arraste</b> para mover</div>
         <div class="legend-item">• <b>Scroll</b> para zoom</div>
     </div>
@@ -240,6 +221,7 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
                 borderWidthSelected: 4
             }},
             edges: {{
+                width: 1,
                 color: {{
                     color: '#848484',
                     highlight: '#FF0000',
@@ -247,17 +229,10 @@ def gerar_html_interativo(grafo, arquivo_saida='grafo_interativo.html'):
                 }},
                 smooth: {{
                     enabled: true,
-                    type: 'continuous'
+                    type: 'curvedCW',
+                    roundness: 0.2
                 }},
-                hoverWidth: 2,
-                font: {{
-                    size: 14,
-                    color: '#FF0000',
-                    face: 'Arial',
-                    background: 'white',
-                    strokeWidth: 0,
-                    align: 'middle'
-                }}
+                hoverWidth: 3
             }},
             physics: {{
                 enabled: true,
