@@ -15,10 +15,13 @@ O grafo suporta arestas paralelas, permitindo que dois bairros sejam conectados 
 
 ```
 .
-├── grafo.py           # Classes principais: Grafo, Vertice, Aresta
-├── carregar_dados.py  # Funções para carregar dados das planilhas
-├── main.py            # Script principal
-└── README.md          # Este arquivo
+├── grafo.py                  # Classes principais: Grafo, Vertice, Aresta
+├── carregar_dados.py         # Funções para carregar dados das planilhas
+├── main.py                   # Script principal
+├── visualizar_grafo.py       # Visualização com matplotlib
+├── visualizar_interativo.py  # Visualização HTML interativa
+├── requirements.txt          # Dependências do projeto
+└── README.md                 # Este arquivo
 ```
 
 ## Classes Principais
@@ -49,19 +52,47 @@ Implementação do grafo não direcionado.
 - Python 3.6+
 - pandas
 - openpyxl (para ler arquivos Excel)
+- matplotlib (opcional, para visualização estática)
 
 Instalação:
 ```bash
-pip install pandas openpyxl
+pip install -r requirements.txt
+```
+
+Ou instalar manualmente:
+```bash
+pip install pandas openpyxl matplotlib
 ```
 
 ## Uso
 
-### Uso básico:
+### 1. Construir e explorar o grafo:
 
 ```bash
 python main.py
 ```
+
+### 2. Visualizar o grafo (HTML Interativo) - RECOMENDADO:
+
+```bash
+python visualizar_interativo.py
+```
+
+Isso vai gerar um arquivo `grafo_interativo.html` que você pode abrir em qualquer navegador. A visualização é totalmente interativa:
+- Arraste os nós para reorganizar
+- Passe o mouse para ver detalhes (nome da via, distância)
+- Zoom com scroll
+- Cores indicam subregiões diferentes
+
+### 3. Visualizar com matplotlib (requer instalação):
+
+```bash
+python visualizar_grafo.py
+```
+
+Opções:
+1. Visualizar grafo completo
+2. Visualizar subgrafo (vizinhança de um bairro específico)
 
 ### Especificar caminhos customizados:
 
